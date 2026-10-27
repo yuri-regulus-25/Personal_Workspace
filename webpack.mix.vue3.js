@@ -24,8 +24,8 @@ mix.webpackConfig({
   resolve: {
     extensions: [".js", ".vue", ".json"],
     alias: {
-      // Force Vue 3 for every import of "vue", including imports inside vuetify4.
-      vue$: require.resolve("vue3/dist/vue.runtime.esm-bundler.js"),
+      // Force Vue 3 for every import of "vue", including imports inside Vuetify 4.
+      vue$: require.resolve("vue/dist/vue.runtime.esm-bundler.js"),
       "@c": path.resolve(__dirname, "src/common/js/c"),
       "@mypage": path.resolve(__dirname, "src/common/js/mypage"),
       "@agent": path.resolve(__dirname, "src/common/js/agent"),
@@ -151,7 +151,7 @@ if (compileCss !== "none") {
 
 if (compileScript !== "none") {
   // Mix 6 resolves "vue-loader" by its normal package name.
-  // Having only vue-loader3@17 alongside vue-loader@15 is NOT sufficient.
+  // Vue 3 requires vue-loader@17 in the normal package slot.
   const vueLoaderVersion = require("vue-loader/package.json").version;
   if (!/^1[67]\./.test(vueLoaderVersion)) {
     throw new Error(
@@ -231,15 +231,15 @@ mix.override((config) => {
   config.resolve ??= {};
   config.resolve.alias ??= {};
   config.resolve.alias["vue$"] = require.resolve(
-    "vue3/dist/vue.runtime.esm-bundler.js"
+    "vue/dist/vue.runtime.esm-bundler.js"
   );
 });
 
 // Vuetify 4のCSSでは、旧postcss-css-variablesによる変換を行わない。
 // 既存CSSの処理はLaravel Mixが生成したルールのまま維持する。
 mix.override((config) => {
-  const vuetify4Path = path.dirname(
-    require.resolve("vuetify4/package.json")
+  const vuetifyPath = path.dirname(
+    require.resolve("vuetify/package.json")
   );
 
   const cssRule = config.module.rules.find(
@@ -267,14 +267,14 @@ mix.override((config) => {
     throw new Error("Laravel Mix PostCSS branch not found");
   }
 
-  const vuetify4Branch = {
+  const vuetifyBranch = {
     ...originalBranch,
 
     // oneOfは最初に一致した分岐だけを使用する。
     // Vuetify 4のCSSだけ、この専用分岐へ送る。
     resource: (resource) =>
       typeof resource === "string" &&
-      resource.startsWith(vuetify4Path + path.sep) &&
+      resource.startsWith(vuetifyPath + path.sep) &&
       resource.endsWith(".css"),
 
     use: originalBranch.use.map((entry) => {
@@ -307,5 +307,5 @@ mix.override((config) => {
     }),
   };
 
-  cssRule.oneOf.unshift(vuetify4Branch);
+  cssRule.oneOf.unshift(vuetifyBranch);
 });
